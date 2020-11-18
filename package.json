@@ -1,0 +1,22 @@
+{
+  "name": "terragrunt-status",
+  "version": "1.0.0",
+  "description": "Describes the deployment status of multiple Terragrunt-managed Terraform stacks",
+  "main": "terragrunt-status.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Connor Bell (git@connor-bell.com)",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "clui": "^0.3.6",
+    "dotparser": "^1.0.0",
+    "execa": "^4.1.0",
+    "inquirer": "^7.3.3",
+    "minimist": "^1.2.5",
+    "spinnies": "^0.5.1",
+    "toposort": "^2.0.2",
+    "which": "^2.0.2"
+  }
+}
