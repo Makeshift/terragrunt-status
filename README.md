@@ -6,7 +6,7 @@ terragrunt-status is a small script that tells you which stacks in Terragrunt ar
 
 * When ran in a folder containing Terragrunt-managed infrastructure, it will retrieve the dependency graph
 * It will then check the output of `terragrunt state list` in each folder to check if it is deployed
-* If the stack is deployed, it will check the output of `terragrunt plan -detailed-exitcode -compact-warnings -refresh=false -lock=false` to see if the stack is up to date
+* If the stack is deployed, it will check the output of `terragrunt plan -detailed-exitcode -compact-warnings -refresh=false -lock=false` to see if the stack code is up to date with the state. (Note: It does not refresh the statefile by default. This can be overridden with `--refresh`)
 * Will display this information
 
 # What it WILL do (eventually)
@@ -22,6 +22,29 @@ terragrunt-status is a small script that tells you which stacks in Terragrunt ar
 * Clone the repo
 * Run `./terragrunt-status.js <dir>`
 
+# Usage
+
+```
+Usage: terragrunt-status [-h|--help] [--debug] [-r|--refresh] [-d|--deploy-order] [-x|--destroy-order] [<path_to_infrastructure>]
+
+This tool describes the deployment status of multiple Terragrunt-managed Terrarform stacks.
+
+Where:
+  -h|    --help            Show this help text
+----
+  --debug                  Shows extra output
+----
+  -d     --deploy-order    Outputs a legal deploy order for the given stacks
+  -x     --destroy-order   Outputs a legal destroy order for the given stacks
+  -r     --refresh         Locks and refreshes statefiles (This will increase the time taken to get a result, but may be more accurate to the live deployment)
+----
+  <path_to_infrastructure> Path to your Terragrunt infrastructure definition - If not provided, assumed to be current working directory.
+
+Note: If you're using aws-vault, you should run this script in an aws-vault session, with the command:
+  aws-vault exec <profile> -- ./terragrunt-status
+```
+
 # Known issues
 
-* It currently only traverses the dependency graph as produced by Terragrunt - If there is no dependency graph (eg. no dependencies or only one stack) then it won't work
+* The code is ugly and not particularly efficient (I wrote it in a hurry)
+* The output is pretty meh, but workable.
