@@ -2,7 +2,11 @@
   "name": "terragrunt-status",
   "version": "1.0.1",
   "description": "Describes the deployment status of multiple Terragrunt-managed Terraform stacks",
-  "main": "terragrunt-status.js",
+  "main": "bin/terragrunt-status.js",
+  "bin": {
+    "terragrunt-status": "bin/terragrunt-status.js",
+    "tgs": "bin/terragrunt-status.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "semantic-release": "semantic-release"
