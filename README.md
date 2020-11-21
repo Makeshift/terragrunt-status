@@ -21,13 +21,13 @@ terragrunt-status is a small script that tells you which stacks in Terragrunt ar
 
 ### NPM
 
-- `npm install -g --production terragrunt-status` (trust me, you want --production!)
+- `npm install -g --production terragrunt-status` (trust me, you want `--production`!)
 
 ### Manual
 
 - `git clone https://github.com/Makeshift/terragrunt-status`
 - `cd terragrunt-status`
-- `npm install --only=prod` (if you forget `--only=prod` you'll be downloading a lot more packages!)
+- `npm install --production` (if you forget `--production` you'll be downloading a lot more packages!)
 - Run `./terragrunt-status.js <dir>`
 
 ## Usage
