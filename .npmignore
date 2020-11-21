@@ -6,3 +6,4 @@ package-lock.json
 README.md
 .git
 .gitignore
+.pre-commit-config.yaml
