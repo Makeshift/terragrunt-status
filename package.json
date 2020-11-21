@@ -1,6 +1,6 @@
 {
   "name": "terragrunt-status",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Describes the deployment status of multiple Terragrunt-managed Terraform stacks",
   "main": "terragrunt-status.js",
   "scripts": {
