@@ -4,7 +4,8 @@
   "description": "Describes the deployment status of multiple Terragrunt-managed Terraform stacks",
   "main": "terragrunt-status.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "semantic-release": "semantic-release"
   },
   "author": "Connor Bell (git@connor-bell.com)",
   "license": "ISC",
