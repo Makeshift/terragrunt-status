@@ -19,7 +19,11 @@ terragrunt-status is a small script that tells you which stacks in Terragrunt ar
 
 (TODO: npm & docker)
 
-* Clone the repo
+## Manual
+
+* `git clone https://github.com/Makeshift/terragrunt-status`
+* `cd terragrunt-status`
+* `npm install --only=prod` (if you forget `--only=prod` you'll be downloading a lot more packages!)
 * Run `./terragrunt-status.js <dir>`
 
 # Usage

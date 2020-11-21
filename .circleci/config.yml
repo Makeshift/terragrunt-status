@@ -1,0 +1,25 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: 'circleci/node:lts'
+    steps:
+      - checkout
+      - run:
+          name: install
+          command: npm install
+      - run:
+          name: outdated
+          command: npm outdated || true
+      - run:
+          name: update
+          command: npm update
+      - run:
+          name: shrinkwrap
+          command: npm shrinkwrap
+      - run:
+          name: audit
+          command: npm audit fix --only=prod --registry https://registry.npmjs.org
+      - run:
+          name: release
+          command: npm run semantic-release || true

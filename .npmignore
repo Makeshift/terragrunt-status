@@ -1,0 +1,8 @@
+.releaserc
+.circleci
+.vscode
+node_modules
+package-lock.json
+README.md
+.git
+.gitignore
