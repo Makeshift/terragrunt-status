@@ -1,5 +1,10 @@
 # terragrunt-status
 
+![CircleCI](https://img.shields.io/circleci/build/github/Makeshift/terragrunt-status)
+![npm](https://img.shields.io/npm/dw/terragrunt-status)
+![GitHub issues](https://img.shields.io/github/issues/Makeshift/terragrunt-status)
+![npm](https://img.shields.io/npm/v/terragrunt-status)
+
 terragrunt-status is a small script that tells you which stacks in Terragrunt are deployed, and if they are out of date.
 
 ## What it can do
