@@ -40,12 +40,16 @@ const outputStream = new Writable({
   }
 });
 
+require('events').EventEmitter.defaultMaxListeners = 0;
+Error.stackTraceLimit = Infinity;
+
 let terraform, terragrunt;
 const cwd = path.resolve(argv._[0] || process.cwd());
 
 async function go() {
   await failEarly();
   const spinnies = new Spinnies();
+  console.log(chalk`Checking for Terragrunt files under dir {blue ${cwd}}`);
   const dependencyTree = await getDependencyTree(spinnies);
   if (argv.d || argv['deploy-order'] || argv.x || argv['destroy-order']) {
     if (argv.d || argv['deploy-order']) {
@@ -160,6 +164,7 @@ async function isDeployed(dir, spinnies, stackName) {
   const count = new PassThrough();
   proc.stdout.pipe(count);
   proc.stdout.pipe(outputStream);
+  proc.stderr.pipe(outputStream);
   let stdout = '';
   count.on('data', (chunk) => (stdout += chunk));
   let error;
@@ -174,14 +179,17 @@ async function isDeployed(dir, spinnies, stackName) {
       failReason: '',
       stacktrace: error
     };
-    if (error) {
-      if (error.message.includes('but detected no outputs')) {
-        ret.failReason = 'Parent stack not deployed.';
-      } else if (error.message.includes('No state file was found!')) {
-        ret.failReason = 'No state file found.';
-      } else {
-        ret.failReason = 'Unknown';
-      }
+    /* jshint ignore:start */
+    if (error?.message.includes('but detected no outputs')) {
+      ret.failReason = 'Parent stack not deployed.';
+    } else if (error?.message.includes('No state file was found!')) {
+      ret.failReason = 'No state file found.';
+    } else if (ret.stacktrace?.stderr?.includes('Error finding AWS credentials')) {
+      ret.failReason = 'Could not find AWS credentials.';
+    } else if (ret.stacktrace?.stderr?.includes('Initialization required')) {
+      ret.failReason = chalk`Initialization required. Run {yellow terragrunt init} in this folder.`;
+    } else if (error) {
+      ret.failReason = 'Unknown';
     } else {
       if (proc.exitCode === 0) {
         ret.success = true;
@@ -190,17 +198,18 @@ async function isDeployed(dir, spinnies, stackName) {
         }
       }
     }
+    /* jshint ignore:end */
     if (ret.deployed) {
       spinnies.update(dir, { text: chalk`{blue ${stackName}} is deployed!` });
     } else if (ret.failReason === 'Parent stack not deployed.') {
       spinnies.update(dir, {
-        text: chalk`{blue ${stackName}} may not be deployed! We can't tell due to a Terragrunt error. (Reason: ${ret.failReason}) ${chalk`{grey (use --debug to show errors from Terragrunt)}`}`,
+        text: chalk`{blue ${stackName}} may not be deployed! We can't tell due to a Terragrunt error. ( Reason: ${ret.failReason} ) ${chalk`{grey (use --debug to show errors from Terragrunt)}`}`,
         status: 'fail',
         failColor: 'yellow'
       });
     } else {
       spinnies.fail(dir, {
-        text: chalk`{blue ${stackName}} is NOT deployed! ${ret.failReason ? `(Reason: ${ret.failReason})` : ''} ${ret.failReason ? chalk`{grey (use --debug to show errors from Terragrunt)}` : ''}`
+        text: chalk`{blue ${stackName}} is NOT deployed! ${ret.failReason ? `( Reason: ${ret.failReason} )` : ''} ${ret.failReason ? chalk`{grey (use --debug to show errors from Terragrunt)}` : ''}`
       });
     }
 
