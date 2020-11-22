@@ -114,7 +114,7 @@ async function getDependencyTree(spinnies) {
     });
     return returnVal;
   } catch (e) {
-    spinnies.fail('deptree', `Getting dependency tree... Failed :( ${chalk`{grey (use --debug to show errors from Terragrunt)`}`);
+    spinnies.fail('deptree', `Getting dependency tree... Failed :( ${chalk`{grey (use --debug to show errors from Terragrunt)}`}`);
     if (e.code === 'ENOENT') {
       console.log(chalk`{red We couldn't find the directory }{yellow ${cwd}}. {red Please ensure it exists and that it is being parsed properly. You may need to provide an absolute path.}`);
     } else if (e.message.includes('Could not find any subfolders with Terragrunt configuration files')) {
