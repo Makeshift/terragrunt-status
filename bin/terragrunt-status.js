@@ -11,22 +11,22 @@ Where:
 {grey ----}
   {yellow --debug                  }Shows extra output
 {grey ----}
-  {yellow -d     --deploy-order    }Outputs a legal deploy order for the given stacks
-  {yellow -x     --destroy-order   }Outputs a legal destroy order for the given stacks
+  {yellow -d     --deploy-order    }Outputs a legal deploy order for the given stacks, then exits
+  {yellow -x     --destroy-order   }Outputs a legal destroy order for the given stacks, then exits
   {yellow -r     --refresh         }Locks and refreshes statefiles (This will increase the time taken to get a result, but may be more accurate to the live deployment)
 {grey ----}
   {yellow <path_to_infrastructure> }Path to your Terragrunt infrastructure definition - If not provided, assumed to be current working directory.
 
 {white Note: If you're using aws-vault, you should run this script in an aws-vault session, with the command:}
-  {grey aws-vault exec <profile> -- ./${path.basename(process.argv[1]).split('.js')[0]}}
+  {grey aws-vault exec <profile> -- ${path.basename(process.argv[1])}}
 `;
 
 const dotparser = require('dotparser');
-const execa = require('execa');
 const Spinnies = require('spinnies');
-const { Writable, PassThrough } = require('stream');
+const { Writable } = require('stream');
 const which = require('which');
 const toposort = require('toposort');
+const { spawn } = require('child_process');
 
 const argv = require('minimist')(process.argv.slice(2), {
   boolean: true
@@ -34,7 +34,7 @@ const argv = require('minimist')(process.argv.slice(2), {
 const outputStream = new Writable({
   write(chunk, encoding, callback) {
     if (argv.debug) {
-      process.stderr.write(chunk);
+      process.stderr.write(chalk`{grey ${chunk.toString()}}`);
     }
     callback();
   }
@@ -91,10 +91,10 @@ async function failEarly() {
 async function getDependencyTree(spinnies) {
   spinnies.add('deptree', { text: 'Getting dependency tree...' });
   try {
-    const { stdout } = await execa(terragrunt, ['graph-dependencies'], {
+    const result = await execProcess(terragrunt, ['graph-dependencies'], {
       cwd: cwd
     });
-    const parsedGraph = dotparser(stdout);
+    const parsedGraph = dotparser(result.stdout);
     const onlyEdges = [
       ...new Set(
         parsedGraph[0].children
@@ -121,12 +121,13 @@ async function getDependencyTree(spinnies) {
     spinnies.fail('deptree', `Getting dependency tree... Failed :( ${chalk`{grey (use --debug to show errors from Terragrunt)}`}`);
     if (e.code === 'ENOENT') {
       console.log(chalk`{red We couldn't find the directory }{yellow ${cwd}}. {red Please ensure it exists and that it is being parsed properly. You may need to provide an absolute path.}`);
-    } else if (e.message.includes('Could not find any subfolders with Terragrunt configuration files')) {
+    } else if (e.stderr.includes('Could not find any subfolders with Terragrunt configuration files')) {
       console.log(
         chalk`{red We couldn't find any Terragrunt config files in }{yellow ${cwd}}. {red Please ensure it exists and that it is being parsed properly. You may need to provide an absolute path.}`
       );
     } else {
-      outputStream.write(e);
+      console.log(chalk`{red Unknown error occurred:}`);
+      console.log(JSON.stringify(e, null, 2).replace('\\n', '\n'));
     }
     process.exit(1);
   }
@@ -159,62 +160,79 @@ async function getStatus(dir, spinnies, stackName) {
   return ret;
 }
 
-async function isDeployed(dir, spinnies, stackName) {
-  let proc = execa(terragrunt, ['state', 'list'], { cwd: dir });
-  const count = new PassThrough();
-  proc.stdout.pipe(count);
-  proc.stdout.pipe(outputStream);
-  proc.stderr.pipe(outputStream);
-  let stdout = '';
-  count.on('data', (chunk) => (stdout += chunk));
-  let error;
-  try {
-    await proc;
-  } catch (e) {
-    error = e;
-  } finally {
+async function execProcess(file, args, opts = {}, rejectIfExitNonzero = true) {
+  return new Promise((resolve, reject) => {
+    let run = spawn(file, args, opts);
     let ret = {
-      deployed: false,
-      success: false,
-      failReason: '',
-      stacktrace: error
+      stdout: '',
+      stderr: '',
+      exitCode: 255
     };
-    /* jshint ignore:start */
-    if (error?.message.includes('but detected no outputs')) {
-      ret.failReason = 'Parent stack not deployed.';
-    } else if (error?.message.includes('No state file was found!')) {
-      ret.failReason = 'No state file found.';
-    } else if (ret.stacktrace?.stderr?.includes('Error finding AWS credentials')) {
-      ret.failReason = 'Could not find AWS credentials.';
-    } else if (ret.stacktrace?.stderr?.includes('Initialization required')) {
-      ret.failReason = chalk`Initialization required. Run {yellow terragrunt init} in this folder.`;
-    } else if (error) {
-      ret.failReason = 'Unknown';
-    } else {
-      if (proc.exitCode === 0) {
-        ret.success = true;
-        if (stdout.length > 1) {
-          ret.deployed = true;
-        }
+    let error;
+    run.stderr.on('data', (data) => {
+      ret.stderr += data;
+      outputStream.write(data);
+    });
+    run.stdout.on('data', (data) => {
+      ret.stdout += data;
+      outputStream.write(data);
+    });
+    run.on('error', (err) => {
+      error = err;
+    });
+    run.on('close', (code) => {
+      ret.exitCode = code;
+      if ((error || code !== 0) && rejectIfExitNonzero) {
+        error = Object.assign(error, ret);
+        reject(error);
+      } else {
+        ret.err = error;
+        resolve(ret);
       }
-    }
-    /* jshint ignore:end */
-    if (ret.deployed) {
-      spinnies.update(dir, { text: chalk`{blue ${stackName}} is deployed!` });
-    } else if (ret.failReason === 'Parent stack not deployed.') {
-      spinnies.update(dir, {
-        text: chalk`{blue ${stackName}} may not be deployed! We can't tell due to a Terragrunt error. ( Reason: ${ret.failReason} ) ${chalk`{grey (use --debug to show errors from Terragrunt)}`}`,
-        status: 'fail',
-        failColor: 'yellow'
-      });
-    } else {
-      spinnies.fail(dir, {
-        text: chalk`{blue ${stackName}} is NOT deployed! ${ret.failReason ? `( Reason: ${ret.failReason} )` : ''} ${ret.failReason ? chalk`{grey (use --debug to show errors from Terragrunt)}` : ''}`
-      });
-    }
+    });
+  });
+}
 
+async function isDeployed(dir, spinnies, stackName) {
+  let result = await execProcess(terragrunt, ['state', 'list'], { cwd: dir }, false);
+
+  let ret = {
+    deployed: false,
+    success: false
+  };
+  if (result.stderr.includes('No state file was found!')) {
+    ret.failReason = 'No state file found.';
+    spinnies.fail(dir, {
+      text: chalk`{blue ${stackName}} is NOT deployed! ( Reason: ${ret.failReason} )${chalk`{grey (use --debug to show errors from Terragrunt)}`}`
+    });
     return ret;
   }
+
+  if (result.stderr.includes('but detected no outputs')) {
+    ret.failReason = 'Parent stack not deployed.';
+  } else if (result.stderr.includes('Error finding AWS credentials')) {
+    ret.failReason = 'Could not find AWS credentials.';
+  } else if (result.stderr.includes('Initialization required')) {
+    ret.failReason = chalk`Initialization required. Run {yellow terragrunt init} in this folder.`;
+  } else if (result.exitCode !== 0) {
+    ret.failReason = 'Unknown';
+  } else {
+    ret.success = true;
+    if (result.stdout.split('\n').length > 1) {
+      ret.deployed = true;
+      spinnies.update(dir, { text: chalk`{blue ${stackName}} is deployed!` });
+    } else {
+      ret.failReason = 'Terragrunt exited zero, but Terraform did not output anything from "terragrunt state list".';
+    }
+  }
+  if (ret.failReason) {
+    spinnies.update(dir, {
+      text: chalk`{blue ${stackName}} may not be deployed! We can't tell due to a Terragrunt error. ( Reason: ${ret.failReason} ) ${chalk`{grey (use --debug to show errors from Terragrunt)}`}`,
+      status: 'fail',
+      failColor: 'yellow'
+    });
+  }
+  return ret;
 }
 
 async function getPlan(dir, spinnies, stackName) {
@@ -223,43 +241,37 @@ async function getPlan(dir, spinnies, stackName) {
   if (!argv.r && !argv.refresh) {
     tgPlanArgs.push('-refresh=false', '-lock=false');
   }
-  let proc = execa(terragrunt, tgPlanArgs, { cwd: dir });
-  proc.stdout.pipe(outputStream);
-  let error;
-  try {
-    await proc;
-  } catch (e) {
-    error = e;
-  } finally {
-    let ret = {
-      hasChanges: false,
-      success: false,
-      stacktrace: error
-    };
-    if (proc.exitCode === 0) {
-      ret.success = true;
-    } else if (proc.exitCode === 2) {
-      ret.success = true;
-      ret.hasChanges = true;
-    }
-    if (ret.hasChanges) {
-      spinnies.update(dir, {
-        text: chalk`{blue ${stackName}} has changes in its plan!`,
-        status: 'succeed',
-        succeedColor: 'yellow'
-      });
-    } else if (ret.success) {
-      spinnies.succeed(dir, {
-        text: chalk`{blue ${stackName}} is up to date!`
-      });
-    } else {
-      spinnies.fail(dir, {
-        text: chalk`{blue ${stackName}} errored :( ${chalk`{grey (use --debug to show errors from Terragrunt)`}`
-      });
-    }
+  let result = await execProcess(terragrunt, tgPlanArgs, { cwd: dir }, false);
 
-    return ret;
+  let ret = {
+    hasChanges: false,
+    success: false
+  };
+  if (result.exitCode === 0) {
+    ret.success = true;
+    spinnies.succeed(dir, {
+      text: chalk`{blue ${stackName}} is up to date!`
+    });
+  } else if (result.exitCode === 2) {
+    ret.success = true;
+    ret.hasChanges = true;
+    spinnies.update(dir, {
+      text: chalk`{blue ${stackName}} has changes in its plan!`,
+      status: 'succeed',
+      succeedColor: 'yellow'
+    });
+  } else {
+    spinnies.fail(dir, {
+      text: chalk`{blue ${stackName}} errored :( ${chalk`{grey (use --debug to show errors from Terragrunt)`}`
+    });
   }
+
+  return ret;
 }
+
+process.on('unhandledRejection', (err, p) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', err);
+  console.log(err.stack);
+});
 
 go();

@@ -17,11 +17,9 @@ terragrunt-status is a small script that tells you which stacks in Terragrunt ar
 
 ## Installation
 
-(TODO: docker)
-
 ### NPM
 
-- `npm install -g --production terragrunt-status` (trust me, you want `--production`!)
+- `npm install -g terragrunt-status`
 
 ### Manual
 
@@ -42,14 +40,14 @@ Where:
 ----
   --debug                  Shows extra output
 ----
-  -d     --deploy-order    Outputs a legal deploy order for the given stacks
-  -x     --destroy-order   Outputs a legal destroy order for the given stacks
+  -d     --deploy-order    Outputs a legal deploy order for the given stacks, then exits
+  -x     --destroy-order   Outputs a legal destroy order for the given stacks, then exits
   -r     --refresh         Locks and refreshes statefiles (This will increase the time taken to get a result, but may be more accurate to the live deployment)
 ----
   <path_to_infrastructure> Path to your Terragrunt infrastructure definition - If not provided, assumed to be current working directory.
 
 Note: If you're using aws-vault, you should run this script in an aws-vault session, with the command:
-  aws-vault exec <profile> -- ./terragrunt-status
+  aws-vault exec <profile> -- terragrunt-status.js
 ```
 
 ## Known issues
