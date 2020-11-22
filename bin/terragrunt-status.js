@@ -41,7 +41,7 @@ const outputStream = new Writable({
 });
 
 let terraform, terragrunt;
-const cwd = path.resolve(argv._[0] || __dirname);
+const cwd = path.resolve(argv._[0] || process.cwd());
 
 async function go() {
   await failEarly();
@@ -191,7 +191,7 @@ async function isDeployed(dir, spinnies, stackName) {
       }
     }
     if (ret.deployed) {
-      spinnies.succeed(dir, { text: chalk`{blue ${stackName}} is deployed!` });
+      spinnies.update(dir, { text: chalk`{blue ${stackName}} is deployed!` });
     } else if (ret.failReason === 'Parent stack not deployed.') {
       spinnies.update(dir, {
         text: chalk`{blue ${stackName}} may not be deployed! We can't tell due to a Terragrunt error. (Reason: ${ret.failReason}) ${chalk`{grey (use --debug to show errors from Terragrunt)}`}`,
