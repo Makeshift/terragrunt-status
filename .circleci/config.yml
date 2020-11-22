@@ -15,9 +15,6 @@ jobs:
           name: update
           command: npm update
       - run:
-          name: shrinkwrap
-          command: npm shrinkwrap
-      - run:
           name: audit
           command: npm audit fix --only=prod --registry https://registry.npmjs.org
       - run:
