@@ -91,7 +91,7 @@ async function failEarly() {
 async function getDependencyTree(spinnies) {
   spinnies.add('deptree', { text: 'Getting dependency tree...' });
   try {
-    const result = await execProcess(terragrunt, ['graph-dependencies'], {
+    const result = await execProcess(terragrunt, ['graph-dependencies', '--terragrunt-ignore-external-dependencies'], {
       cwd: cwd
     });
     const parsedGraph = dotparser(result.stdout);
