@@ -4,8 +4,11 @@
 ![npm](https://img.shields.io/npm/dw/terragrunt-status)
 ![GitHub issues](https://img.shields.io/github/issues/Makeshift/terragrunt-status)
 ![npm](https://img.shields.io/npm/v/terragrunt-status)
+[![Depfu](https://badges.depfu.com/badges/1300925fe7391773fe6f266fc2ebc06d/overview.svg)](https://depfu.com/github/Makeshift/terragrunt-status?project_id=17813)
 
 terragrunt-status is a small script that tells you which stacks in Terragrunt are deployed, and if they are out of date.
+
+![](recording.gif)
 
 ## What it can do
 
