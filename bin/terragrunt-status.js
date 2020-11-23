@@ -100,13 +100,13 @@ async function getDependencyTree(spinnies) {
         parsedGraph[0].children
           .filter((obj) => obj.type === 'edge_stmt')
           .map((obj) => obj.edge_list)
-          .map((arr) => arr.map((ids) => ids.id))
+          .map((arr) => arr.map((ids) => path.relative(cwd, ids.id)))
       )
     ];
     const destroyOrder = toposort(onlyEdges);
     const otherNodes = parsedGraph[0].children
       .filter((obj) => obj.type === 'node_stmt')
-      .map((obj) => obj.node_id.id)
+      .map((obj) => path.relative(cwd, obj.node_id.id))
       .filter((obj) => !destroyOrder.includes(obj));
     const returnVal = {
       destroyOrder: [...destroyOrder],
