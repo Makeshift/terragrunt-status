@@ -8,7 +8,7 @@
      }],
      ["@semantic-release/github", {
        "assets": [
-         "*.js",
+         "bin/*.js",
          "*.json"
        ]
      }],
