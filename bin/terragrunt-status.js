@@ -262,7 +262,7 @@ async function getPlan(dir, spinnies, stackName) {
     });
   } else {
     spinnies.fail(dir, {
-      text: chalk`{blue ${stackName}} errored :( ${chalk`{grey (use --debug to show errors from Terragrunt)`}`
+      text: chalk`{blue ${stackName}} errored :( ${chalk`{grey (use --debug to show errors from Terragrunt)}`}`
     });
   }
 
