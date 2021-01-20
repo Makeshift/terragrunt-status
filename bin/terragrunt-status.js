@@ -8,6 +8,7 @@ This tool describes the deployment status of multiple Terragrunt-managed Terrarf
 
 Where:
   {yellow -h|    --help            }Show this help text
+  {yellow -v|    --version         }Output version
 {grey ----}
   {yellow --debug                  }Shows extra output
 {grey ----}
@@ -72,6 +73,12 @@ async function go() {
 async function failEarly() {
   if (argv.help || argv.h) {
     console.log(usage);
+    process.exit(0);
+  }
+  if (argv.version || argv.v) {
+    const package = require(`${__dirname}/../package.json`);
+    console.log(`Package: ${package.name}`);
+    console.log(`Version: ${package.version}`);
     process.exit(0);
   }
   try {
