@@ -119,15 +119,16 @@ async function getDependencyTree(spinnies) {
     return returnVal;
   } catch (e) {
     spinnies.fail('deptree', `Getting dependency tree... Failed :( ${chalk`{grey (use --debug to show errors from Terragrunt)}`}`);
-    if (e.code === 'ENOENT') {
+    console.log(chalk`Unfortunately, for {blue terragrunt-status} to run, the command {blue terragrunt graph-dependencies} must exit 0. There is no way to get it to skip erroring stacks.`);
+    if (e?.code === 'ENOENT') {
       console.log(chalk`{red We couldn't find the directory }{yellow ${cwd}}. {red Please ensure it exists and that it is being parsed properly. You may need to provide an absolute path.}`);
-    } else if (e.stderr.includes('Could not find any subfolders with Terragrunt configuration files')) {
+    } else if (e?.stderr.includes('Could not find any subfolders with Terragrunt configuration files')) {
       console.log(
         chalk`{red We couldn't find any Terragrunt config files in }{yellow ${cwd}}. {red Please ensure it exists and that it is being parsed properly. You may need to provide an absolute path.}`
       );
     } else {
       console.log(chalk`{red Unknown error occurred:}`);
-      console.log(JSON.stringify(e, null, 2).replace('\\n', '\n'));
+      console.log(chalk`{blue stdout}:\n${e.stdout.replace('\\n', '\n')}\n{blue stderr}:\n{red ${e.stderr.replace('\\n', '\n')}}\n{blue Exit code:} {red ${e.exitCode}}`);
     }
     process.exit(1);
   }
@@ -178,13 +179,14 @@ async function execProcess(file, args, opts = {}, rejectIfExitNonzero = true) {
       outputStream.write(data);
     });
     run.on('error', (err) => {
+      console.log(chalk`{red ${err}}`);
       error = err;
     });
     run.on('close', (code) => {
       ret.exitCode = code;
-      if ((error || code !== 0) && rejectIfExitNonzero) {
-        error = Object.assign(error, ret);
-        reject(error);
+      if (error) Object.assign(error, ret);
+      if (code !== 0 && rejectIfExitNonzero) {
+        reject(ret);
       } else {
         ret.err = error;
         resolve(ret);
