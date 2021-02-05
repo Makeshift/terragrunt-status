@@ -23,6 +23,12 @@ terragrunt-status is a small script that tells you which stacks in Terragrunt ar
 - Will handle different edge-cases and errors from Terragrunt/Terraform
 - Will be able to generate `apply-all` and `destroy-all` commands that exclude deployed/non-deployed stacks (to work around issues like terragrunt-io/terragrunt#1394)
 
+## What it MIGHT do (if there's interest / if I end up needing it)
+
+- Optionally will be able to run things like `terragrunt init` if it's needed
+- Be able to iterate through stacks in order and run commands as a wrapper around Terragrunt
+- Maybe have a cool interactive CLI menu with tickboxes and stuff to choose stacks and then it'll do it in the right order with dependencies and stuff? I dunno I haven't thought that far ahead.
+
 ## Installation
 
 ### NPM

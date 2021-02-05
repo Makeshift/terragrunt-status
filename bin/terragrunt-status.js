@@ -221,7 +221,7 @@ async function isDeployed(dir, spinnies, stackName) {
     ret.failReason = 'Parent stack not deployed.';
   } else if (result.stderr.includes('Error finding AWS credentials')) {
     ret.failReason = 'Could not find AWS credentials.';
-  } else if (result.stderr.includes('Initialization required')) {
+  } else if (result.stderr.includes('Initialization required') || result.stderr.includes('Could not load plugin')) {
     ret.failReason = chalk`Initialization required. Run {yellow terragrunt init} in this folder.`;
   } else if (result.exitCode !== 0) {
     ret.failReason = 'Unknown';
@@ -267,7 +267,8 @@ async function getPlan(dir, spinnies, stackName) {
     spinnies.update(dir, {
       text: chalk`{blue ${stackName}} has changes in its plan!`,
       status: 'succeed',
-      succeedColor: 'yellow'
+      succeedColor: 'yellow',
+      succeedPrefix: 'F'
     });
   } else {
     spinnies.fail(dir, {
