@@ -6,7 +6,7 @@ jobs:
         only:
           - master
     docker:
-      - image: 'circleci/node:lts'
+      - image: 'cimg/node:lts'
     steps:
       - checkout
       - run:
