@@ -8,7 +8,7 @@
 
 terragrunt-status is a small script that tells you which stacks in Terragrunt are deployed, and if they are out of date.
 
-![](recording.gif)
+![A recording of terragrunt-status in use](recording.gif)
 
 ## What it can do
 
@@ -44,7 +44,7 @@ terragrunt-status is a small script that tells you which stacks in Terragrunt ar
 
 ## Usage
 
-```
+```text
 Usage: terragrunt-status [-h|--help] [--debug] [-r|--refresh] [-d|--deploy-order] [-x|--destroy-order] [<path_to_infrastructure>]
 
 This tool describes the deployment status of multiple Terragrunt-managed Terrarform stacks.

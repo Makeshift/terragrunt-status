@@ -1,22 +1,17 @@
 version: 2
 jobs:
   build:
+    filters:
+      branches:
+        only:
+          - master
     docker:
       - image: 'circleci/node:lts'
     steps:
       - checkout
       - run:
           name: install
-          command: npm install
-      - run:
-          name: outdated
-          command: npm outdated || true
-      - run:
-          name: update
-          command: npm update
-      - run:
-          name: audit
-          command: npm audit fix --only=prod --registry https://registry.npmjs.org
+          command: yarn install
       - run:
           name: release
-          command: npm run semantic-release || true
+          command: npx semantic-release

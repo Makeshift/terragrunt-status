@@ -2,34 +2,38 @@
   "name": "terragrunt-status",
   "version": "1.2.2",
   "description": "Describes the deployment status of multiple Terragrunt-managed Terraform stacks",
-  "main": "bin/terragrunt-status.js",
+  "main": "bin/terragrunt-status.mjs",
   "bin": {
-    "terragrunt-status": "bin/terragrunt-status.js",
-    "tgs": "bin/terragrunt-status.js"
+    "terragrunt-status": "bin/terragrunt-status.mjs",
+    "tgs": "bin/terragrunt-status.mjs"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "semantic-release": "semantic-release"
   },
+  "type": "module",
   "homepage": "https://github.com/makeshift/terragrunt-status",
   "author": "Connor Bell (git@connor-bell.com)",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "chalk": "^4.1.0",
+    "chalk": "^5.2.0",
+    "chalk-template": "^0.5.0",
     "dotparser": "^1.0.0",
     "minimist": "^1.2.5",
     "spinnies": "^0.5.1",
     "toposort": "^2.0.2",
-    "which": "^2.0.2"
+    "which": "^3.0.0"
   },
   "devDependencies": {
-    "@semantic-release/git": "^9.0.0",
-    "@semantic-release/github": "^7.0.5",
-    "@semantic-release/npm": "^7.0.5",
-    "@semantic-release/release-notes-generator": "^9.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^8.0.7",
+    "@semantic-release/npm": "^9.0.2",
+    "@semantic-release/release-notes-generator": "^10.0.3",
+    "@types/node": "^18.15.0",
     "conventional-changelog-eslint": "^3.0.4",
     "jshint": "^2.12.0",
     "prettier": "^2.2.0",
-    "semantic-release": "^17.0.4"
+    "semantic-release": "^20.1.1",
+    "standard": "^17.0.0"
   }
 }
