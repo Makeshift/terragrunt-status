@@ -17,7 +17,7 @@
   "license": "AGPL-3.0-only",
   "dependencies": {
     "chalk": "^5.2.0",
-    "chalk-template": "^0.5.0",
+    "chalk-template": "^1.1.0",
     "dotparser": "^1.0.0",
     "minimist": "^1.2.5",
     "spinnies": "^0.5.1",
